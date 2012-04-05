@@ -305,10 +305,12 @@ set ( aprdso 0 )
 set ( acceptfilter 0 )
 set ( have_unicode_fs 0 )
 set ( have_proc_invoked 0 )
-set ( apr_has_user 0 )
+set ( apr_has_user 1 )
 set ( aprlfs 0 )
 set ( apr_has_xthread_files 0 )
 set ( osuuid 0 )
+set ( apr_procattr_user_set_requires_password 0 )
+set ( apr_thread_func "" )
 
 # TODO: improve
 set ( apr_charset_ebcdic 0 )
@@ -711,3 +713,8 @@ endif ()
 # FIX: more
 
 add_library( apr ${SRC} )
+
+install_library( apr )
+install_header ( ${CMAKE_CURRENT_BINARY_DIR}/apr.h )
+install_doc( CHANGES README docs/)
+
