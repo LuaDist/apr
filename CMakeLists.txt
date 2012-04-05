@@ -712,7 +712,7 @@ else ()
 endif ()
 # FIX: more
 
-add_library( apr ${SRC} )
+add_library( apr SHARED ${SRC} )
 
 install_library( apr )
 install_header ( ${CMAKE_CURRENT_BINARY_DIR}/apr.h )
