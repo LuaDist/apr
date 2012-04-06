@@ -24,6 +24,14 @@ It was adapted from the autoconf build,
 which is fairly complex.
 ")
 
+# user options
+option ( AUTOCONF "use autoconf rather than cmake to configure.  This may be more complete at this time." OFF )
+
+if ( AUTOCONF ) # use autoconf to configure
+  include ( build/autoconf.cmake )
+else () # use CMake to configure
+
+
 include ( CheckIncludeFile )
 include ( CheckFunctionExists )
 include ( CheckSymbolExists )
@@ -370,6 +378,10 @@ set ( apr_charset_ebcdic 0 )
 
 configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/include/arch/unix/apr_private.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/apr_private.h )
 configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/include/apr.h.in ${CMAKE_CURRENT_BINARY_DIR}/apr.h @ONLY )
+
+
+endif () # use cmake to configure
+
 
 include_directories ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR}/include )
