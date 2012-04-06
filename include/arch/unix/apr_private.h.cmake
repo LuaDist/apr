@@ -224,7 +224,7 @@
 #cmakedefine HAVE_HSTRERROR
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-#cmakedefine HAVE_INTTYPES_H
+#cmakedefine01 HAVE_INTTYPES_H
 
 /* Define to 1 if you have the <io.h> header file. */
 #cmakedefine HAVE_IO_H
@@ -332,7 +332,7 @@
 #cmakedefine HAVE_POLLIN
 
 /* Define to 1 if you have the <poll.h> header file. */
-#cmakedefine HAVE_POLL_H
+#cmakedefine01 HAVE_POLL_H
 
 /* Define to 1 if you have the `port_create' function. */
 #cmakedefine HAVE_PORT_CREATE
@@ -380,7 +380,7 @@
 #cmakedefine HAVE_READDIR64_R
 
 /* Define to 1 if you have the <sched.h> header file. */
-#cmakedefine HAVE_SCHED_H
+#cmakedefine01 HAVE_SCHED_H
 
 /* Define to 1 if you have the `sched_yield' function. */
 #cmakedefine HAVE_SCHED_YIELD
@@ -581,7 +581,7 @@
 #cmakedefine HAVE_SYS_PARAM_H
 
 /* Define to 1 if you have the <sys/poll.h> header file. */
-#cmakedefine HAVE_SYS_POLL_H
+#cmakedefine01 HAVE_SYS_POLL_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #cmakedefine HAVE_SYS_RESOURCE_H

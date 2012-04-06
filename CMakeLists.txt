@@ -26,6 +26,7 @@ which is fairly complex.
 
 include ( CheckIncludeFile )
 include ( CheckFunctionExists )
+include ( CheckSymbolExists )
 
 macro ( my_check_include_file path var )
   check_include_file ( ${path} ${var} )
@@ -38,9 +39,16 @@ endmacro ()
 # from configure.in & apr.h.in
 macro ( APR_FLAG_HEADERS )
   foreach ( path ${ARGV} )
+    # set "timeh" style variables for apr.h.in.
     string ( REPLACE "." "" _var "${path}" )
     string ( REPLACE "/" "_" _var "${_var}" )
     my_check_include_file ( ${path} ${_var} )
+    # also define "HAVE_TIME_H" style variables for apr_private.h.cmake.
+    string ( REPLACE "." "_" _var2 "${path}" )
+    string ( REPLACE "/" "_" _var2 "${_var2}" )
+    string ( TOUPPER "HAVE_${_var2}" _var2 )
+    # message ( "${_var2}: ${${_var}}")
+    set ( "${_var2}" ${${_var}} )
   endforeach ()
 endmacro ()
 APR_FLAG_HEADERS (
@@ -170,7 +178,6 @@ else ()
   message ( FATAL "could not detect a 64-bit integer type" )
 endif ()
 
-
 # from configure.in
 macro ( my_check_function_exists func var )
   check_function_exists ( ${func} ${var} )
@@ -188,12 +195,18 @@ my_check_function_exists ( memchr have_memchr )
 #my_check_function_exists ( $int64_strfn, have_int64_strfn="1", have_int64_strfn="0" )
 
 my_check_function_exists ( memmove have_memmove )
-message("HM: ${have_memmove}")
 check_function_exists ( getpass HAVE_GETPASS )
 check_function_exists ( getpassphrase HAVE_GETPASSPHRASE )
 check_function_exists ( gmtime_r HAVE_GMTIME_R )
 check_function_exists ( localtime_r HAVE_LOCALTIME_R )
 check_function_exists ( mkstemp HAVE_MKSTEMP )
+
+check_function_exists ( sigsuspend have_sigsuspend )
+check_function_exists ( sigwait have_sigwait ) 
+check_function_exists ( sigaction have_sigaction ) 
+
+check_function_exists ( setrlimit have_setrlimit ) 
+check_function_exists ( getrlimit have_getrlimit ) 
 
 set ( rand 0 ) # TOOD: see configure.in
 
@@ -202,7 +215,7 @@ set ( threads 0 )
 set ( pthreadh 0 )
 set ( pthreadser 0 )
 
-# from apr.h.in
+# from apr.h.in / configure.in
 #TODO:improve
 set ( havemmaptmp 0 )
 set ( havemmapshm 0 )
@@ -231,24 +244,11 @@ set ( hasfcntlser 0)
 set ( hasprocpthreadser 0)
 set ( proclockglobal 0)
 set ( have_corkable_tcp 0)
-set ( have_getrlimit 0)
 set ( have_in_addr 1)
 set ( have_inet_addr 0)
 set ( have_inet_network 0)
 set ( have_ipv6 0)
-# see above: set ( have_memmove 0)
-set ( have_setrlimit 0)
-set ( have_sigaction 0)
-set ( have_sigsuspend 0)
-set ( have_sigwait 0)
 set ( have_sa_storage 0)
-set ( have_strcasecmp 0)
-set ( have_strdup 0)
-set ( have_stricmp 0)
-set ( have_strncasecmp 0)
-set ( have_strnicmp 0)
-set ( have_strstr 0)
-set ( have_memchr 0)
 set ( struct_rlimit 0)
 set ( have_union_semun 0)
 set ( have_sctp 0)
@@ -262,8 +262,13 @@ set ( o_nonblock_inherited 0 )
 #TODO:FIX
 set ( proc_mutex_is_global 0 )
 
-# FIX
-set ( file_as_socket 0 )
+if ( 0 ) # FIX: OS2 or beos != 5.0.4
+  set ( file_as_socket 0 )
+elseif ( WIN32 AND NOT CYGWIN )
+  set ( file_as_socket 0 )
+else ()
+  set ( file_as_socket 1 )
+endif ()
 
 include ( TestBigEndian )
 test_big_endian ( _big_endian )
@@ -292,17 +297,24 @@ else ()
 endif ()
 set ( CMAKE_EXTRA_INCLUDE_FILES )
 
+macro ( my_check_symbol_exists symbol files variable )
+  check_symbol_exists ( ${symbol} ${files} ${variable} )
+  if ( NOT ${variable} )
+    set ( ${variable} 0 )
+  endif ()
+endmacro ()
+
 # APR Feature Macros (from configure.in / apr.h.in)
 # TODO: improve
 set ( sharedmem 0 )
 set ( threads 0 )
 set ( sendfile 0 )
 set ( mmap 0 )
-set ( fork 0 )
+my_check_function_exists ( fork fork )
 set ( rand 0 )
-set ( oc 0 )
+set ( oc 0 ) #FIX: 1 if --enable-other-child  argument
 set ( aprdso 0 )
-set ( acceptfilter 0 )
+my_check_symbol_exists ( SO_ACCEPT_FILTER sys/socket.h acceptfilter )
 set ( have_unicode_fs 0 )
 set ( have_proc_invoked 0 )
 set ( apr_has_user 1 )
@@ -326,7 +338,7 @@ include_directories ( ${CMAKE_CURRENT_SOURCE_DIR}/include/arch/unix )
 
 set ( SRC_all
   passwd/apr_getpass.c
-  #FIX strings/apr_cpystrn.c
+  strings/apr_cpystrn.c
   strings/apr_fnmatch.c
   strings/apr_snprintf.c
   strings/apr_strings.c
@@ -349,7 +361,7 @@ set ( SRC_file_io_unix
   file_io/unix/filepath.c
   file_io/unix/filepath_util.c
   file_io/unix/filestat.c
-  #FIX file_io/unix/flock.c
+  file_io/unix/flock.c
   file_io/unix/fullrw.c
   file_io/unix/mktemp.c
   file_io/unix/open.c
@@ -432,13 +444,13 @@ set ( SRC_threadproc_unix
 )
 
 set ( SRC_time_unix
-  #FIX time/unix/time.c
+  time/unix/time.c
   #FIX time/unix/timestr.c
 )
 
 set ( SRC_user_unix
-  #FIX user/unix/groupinfo.c
-  #FIX user/unix/userinfo.c
+  user/unix/groupinfo.c
+  user/unix/userinfo.c
 )
 
 set ( SRC_atomic_unix
