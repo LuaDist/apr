@@ -178,6 +178,45 @@ else ()
   message ( FATAL "could not detect a 64-bit integer type" )
 endif ()
 
+set ( CMAKE_EXTRA_INCLUDE_FILES sys/types.h )
+check_type_size ( "ssize_t" _sizeof_ssize_t )
+check_type_size ( "size_t" _sizeof_size_t )
+check_type_size ( "pid_t" _sizeof_pid_t ) # 8
+set ( CMAKE_EXTRA_INCLUDE_FILES )
+
+if ( _sizeof_pid_t EQUAL _sizeof_short )
+  set ( pid_t_fmt "#define APR_PID_T_FMT \"hd\"" )
+elseif ( _sizeof_pid_t EQUAL _sizeof_int )
+  set ( pid_t_fmt "#define APR_PID_T_FMT \"d\"" )
+elseif ( _sizeof_pid_t EQUAL _sizeof_long )
+  set ( pid_t_fmt "#define APR_PID_T_FMT \"ld\"" )
+elseif ( _sizeof_pid_t EQUAL _sizeof_long_long )
+  set ( pid_t_fmt "#define APR_PID_T_FMT APR_INT64_T_FMT" )
+else ()
+  set ( pid_t_fmt  "#error Can not determine the proper size for pid_t" )
+endif ()
+
+message ( WARNING "IMPROVE: _sizeof_ssize_t - see configure.in ")
+if ( ssize_t_fmt )
+elseif ( _sizeof_ssize_t EQUAL _sizeof_int )
+  set ( ssize_t_fmt "d" )
+elseif ( _sizeof_ssize_t EQUAL _sizeof_long )
+  set ( ssize_t_fmt "ld" )
+else ()
+  message ( FATAL "could not determine the proper format for apr_ssize_t" )
+endif ()
+message ( WARNING "IMPROVE: _sizeof_size_t - see configure.in ")
+if ( size_t_fmt )
+elseif ( _sizeof_size_t EQUAL _sizeof_int )
+  set ( size_t_fmt "d" )
+elseif ( _sizeof_size_t EQUAL _sizeof_long )
+  set ( size_t_fmt "ld" )
+else ()
+  message ( FATAL "could not determine the proper format for apr_size_t" )
+endif ()
+set ( ssize_t_fmt "#define APR_SSIZE_T_FMT \"${ssize_t_fmt}\"" )
+set ( size_t_fmt "#define APR_SIZE_T_FMT \"${size_t_fmt}\"" )
+
 # from configure.in
 macro ( my_check_function_exists func var )
   check_function_exists ( ${func} ${var} )
@@ -279,12 +318,14 @@ else ()
 endif ()
 
 #TODO (configure.in)
+message ( WARNING "FIX: off_t_*" )
 #set ( off_t_fmt "#define APR_OFF_T_FMT APR_INT64_T_FMT" )
 #set ( off_t_value "off64_t" )
 #set ( off_t_strfn "apr_strtoi64" )
 set ( off_t_value long )
 set ( off_t_fmt "#define APR_OFF_T_FMT \"ld\"" )
 set ( off_t_strfn "strtol" )
+add_definitions ( -DAPR_OFF_T_STRFN=${off_t_strfn} )
 
 # from configure.in
 include ( CheckTypeSize )
@@ -445,7 +486,7 @@ set ( SRC_threadproc_unix
 
 set ( SRC_time_unix
   time/unix/time.c
-  #FIX time/unix/timestr.c
+  time/unix/timestr.c
 )
 
 set ( SRC_user_unix
@@ -464,7 +505,7 @@ set ( SRC_atomic_unix
 
 set ( SRC_unix
   ${SRC_all} ${SRC_atomic_unix} ${SRC_dso_unix}
-  ${SRC_fix} ${SRC_locks_unix} ${SRC_memory_unix}
+  ${SRC_file_io_unix} ${SRC_locks_unix} ${SRC_memory_unix}
   ${SRC_misc_unix} ${SRC_mmap_unix} ${SRC_network_io_unix}
   ${SRC_poll_unix} ${SRC_random_unix} ${SRC_shmem_unix}
   ${SRC_support_unix} ${SRC_threadproc_unix} ${SRC_time_unix} ${SRC_user_unix}
@@ -726,7 +767,9 @@ endif ()
 
 add_library( apr SHARED ${SRC} )
 
+enable_testing()
+add_subdirectory ( test )
+
 install_library( apr )
 install_header ( ${CMAKE_CURRENT_BINARY_DIR}/apr.h )
 install_doc( CHANGES README docs/)
-
