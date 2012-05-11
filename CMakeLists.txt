@@ -12,7 +12,7 @@
 project ( apr C )
 
 cmake_minimum_required ( VERSION 2.8 )
-include ( dist.cmake )
+include ( cmake/dist.cmake )
 
 message ( WARNING
 "
