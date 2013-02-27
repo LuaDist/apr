@@ -1,0 +1,25 @@
+type = "x86_64"
+arch = "Ubuntu"
+desc = "Consistent API to common platform specific features."
+name = "apr"
+maintainer = "David Manura"
+files = {
+Unspecified = {
+[[lib/libapr.so]],
+[[include/apr.h]],
+[[share/apr/doc/CHANGES]],
+[[share/apr/doc/README]],
+[[share/apr/doc//win32_builds.html]],
+[[share/apr/doc//incomplete_types]],
+[[share/apr/doc//non_apr_programs]],
+[[share/apr/doc//APRDesign.html]],
+[[share/apr/doc//doxygen.conf]],
+[[share/apr/doc//pool-design.html]],
+[[share/apr/doc//canonical_filenames.html]],
+}
+,
+}
+
+license = "Apache and others (see LICENSE)"
+version = "1.4.6"
+url = "http://www.apache.org/"
